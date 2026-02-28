@@ -1,0 +1,35 @@
+{
+  "name": "openclaw-plugin-tokenranger",
+  "version": "1.0.0",
+  "description": "TokenRanger — context compression plugin for OpenClaw. Reduces cloud LLM token costs by 50-80% via local SLM summarization (Ollama).",
+  "type": "module",
+  "author": "synchronic1",
+  "license": "MIT",
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "llm",
+    "token-compression",
+    "ollama",
+    "context-compression"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/synchronic1/openclaw-plugin-tokenranger"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ],
+    "install": {
+      "npmSpec": "openclaw-plugin-tokenranger",
+      "defaultChoice": "npm"
+    }
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.2.0"
+  },
+  "devDependencies": {
+    "openclaw": ">=2026.2.0"
+  }
+}
