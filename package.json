@@ -15,7 +15,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/synchronic1/openclaw-plugin-tokenranger"
+    "url": "https://github.com/peterjohannmedina/openclaw-plugin-tokenranger"
   },
   "openclaw": {
     "extensions": [
