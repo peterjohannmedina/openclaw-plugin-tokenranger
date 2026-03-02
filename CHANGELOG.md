@@ -7,6 +7,15 @@ Versions follow [CalVer](https://calver.org): `YYYY.M.D` (patch releases: `YYYY.
 
 ---
 
+## [2026.3.2] — 2026-03-02
+
+First CalVer release published to npm registry.
+
+### Changes
+- Version bump to CalVer format (2026.3.2)
+- npm publish configured with public access
+- GitHub release automation via `scripts/release.sh`
+
 ## [1.0.0] — 2026-02-28
 
 Initial release. Extracted from [openclaw/openclaw#27918](https://github.com/openclaw/openclaw/pull/27918) and repackaged as a standalone community plugin per maintainer guidance.
