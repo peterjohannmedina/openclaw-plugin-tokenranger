@@ -1,0 +1,20 @@
+# Enhanced Harness Plugin CODEOWNERS
+# Automatic code ownership and review requirements
+
+* @synchronic1
+
+# Core modules require synchronic1 review
+src/tool-registry.js @synchronic1
+src/permission-context.js @synchronic1
+src/session-manager.js @synchronic1
+src/streaming-responses.js @synchronic1
+
+# Plugin entrypoint
+index.js @synchronic1
+
+# CI/CD workflows
+.github/workflows/ @synchronic1
+
+# Configuration
+package.json @synchronic1
+README.md @synchronic1
