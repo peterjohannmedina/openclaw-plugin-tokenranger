@@ -249,3 +249,30 @@ See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for the full release and versioning w
 ## License
 
 MIT — see [LICENSE](./LICENSE)
+
+
+## Harness-Ranger Pattern Enhancements
+
+This version includes advanced patterns from the Claude Code porting workspace, adding intelligent compression capabilities:
+
+### Enhanced Features:
+- **Compression Strategy Registry** - Semantic matching for adaptive strategy selection
+- **Permission Context** - Rate limiting and access control for compression operations  
+- **Enhanced Context Manager** - Historical learning and intelligent compression decisions
+- **Comprehensive Metrics** - ROI tracking and performance analytics
+
+### Configuration Updates:
+Add these new options to your config:
+
+```json
+{
+  "maxRequestsPerHour": 100,
+  "approvalTokenThreshold": 50000,
+  "maxHistoryPerSession": 50,
+  "metricsRetentionDays": 30,
+  "semanticMatchingThreshold": 0.3
+}
+```
+
+See `HARNESS_RANGER_ENHANCEMENTS.md` for complete integration details.
+

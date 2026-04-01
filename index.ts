@@ -20,6 +20,11 @@ import { parseConfig, tokenRangerConfigSchema } from "./src/config.js";
 import type { TokenRangerConfig } from "./src/config.js";
 import { checkServiceHealth } from "./src/health.js";
 import { detectPlatform, resolveServiceDir } from "./src/platform.js";
+
+// Harness-Ranger Enhanced Components
+import { CompressionStrategyRegistry } from "./src/compression-registry.js";
+import { CompressionPermissionContext } from "./src/compression-permission.js";
+import { EnhancedContextManager } from "./src/enhanced-context-manager.js";
 import {
   checkPrerequisites,
   installOllama,
@@ -41,6 +46,12 @@ const tokenRangerPlugin = {
   register(api: OpenClawPluginApi) {
     // Mutable cfg — updated in-memory by /tokenranger command, takes effect immediately
     let cfg: TokenRangerConfig = parseConfig(api.pluginConfig);
+
+    // Initialize enhanced components
+    const strategyRegistry = new CompressionStrategyRegistry(cfg);
+    const permissionContext = new CompressionPermissionContext(cfg);
+    const contextManager = new EnhancedContextManager(cfg);
+    let userContext = {}; // Will be populated from event context
 
     // ========================================================================
     // Health check on gateway start
@@ -108,6 +119,35 @@ const tokenRangerPlugin = {
           `prompt=${(event.prompt ?? "").substring(0, 80)}`,
       );
 
+      // Extract user context for permission checks
+      userContext = {
+        id: event.user?.id || "unknown",
+        isAdmin: event.user?.roles?.includes("admin") || false,
+        approved: event.user?.approved || false
+      };
+
+      // Enhanced: Check if compression should happen based on history
+      const tokenCount = estimateTokens(event.prompt + sessionHistory);
+      if (!contextManager.shouldCompress(event.sessionId, tokenCount)) {
+        api.logger.debug?.(
+          `[tokenranger] Skipping: historical ineffectiveness detected`,
+        );
+        return;
+      }
+
+      // Enhanced: Recommend strategy based on session history and context
+      const recommendedStrategy = contextManager.recommendStrategy(event.sessionId, {
+        hasGPU: await detectGPU(),
+        urgentCompression: tokenCount > 10000
+      });
+
+      // Enhanced: Check permissions before compression
+      const permissionCheck = permissionContext.canCompress(userContext, recommendedStrategy, tokenCount);
+      if (!permissionCheck.allowed) {
+        api.logger.warn(`[tokenranger] Compression denied: ${permissionCheck.reason}`);
+        return;
+      }
+
       // Skip if history is too short to benefit from compression
       if (sessionHistory.length < cfg.minPromptLength) {
         api.logger.debug?.(
@@ -116,24 +156,8 @@ const tokenRangerPlugin = {
         return;
       }
 
-      // Compute strategy/model overrides from inferenceMode and compressionStrategy
-      let strategyOverride: string | undefined;
-      if (cfg.compressionStrategy !== "auto") {
-        // Explicit compressionStrategy takes priority
-        strategyOverride = cfg.compressionStrategy;
-      } else if (cfg.inferenceMode !== "auto") {
-        // inferenceMode maps to strategy
-        strategyOverride =
-          cfg.inferenceMode === "cpu"
-            ? "light"
-            : cfg.inferenceMode === "gpu"
-              ? "full"
-              : cfg.inferenceMode === "remote"
-                ? "full"
-                : undefined;
-      }
-
       const modelOverride = cfg.preferredModel || undefined;
+      const strategyOverride = recommendedStrategy;
 
       try {
         const result = await compressContext({
@@ -698,3 +722,13 @@ const tokenRangerPlugin = {
 };
 
 export default tokenRangerPlugin;
+
+/**
+ * Rough token estimation utility
+ * Pattern from harness-ranger enhanced context management
+ */
+function estimateTokens(text: string): number {
+  // Simple estimation: ~1 token per 4 characters
+  return Math.ceil(text.length / 4);
+}
+
